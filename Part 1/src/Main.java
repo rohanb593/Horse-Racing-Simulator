@@ -1,3 +1,5 @@
+
+
 public class Main {
     public static void main(String[] args) {
         // Create horses
@@ -15,6 +17,9 @@ public class Main {
 
         // Start the race
         race.startRace();
+
+
+
     }
 
 

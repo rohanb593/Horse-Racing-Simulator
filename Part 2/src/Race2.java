@@ -1,5 +1,4 @@
 import java.util.concurrent.TimeUnit;
-import java.lang.Math;
 
 /**
  * A three-horse race, each horse running in its own lane
@@ -8,7 +7,7 @@ import java.lang.Math;
  * @author McRaceface
  * @version 1.0
  */
-public class Race
+public class Race2
 {
     private final int raceLength;
     private Horse lane1Horse;
@@ -21,7 +20,7 @@ public class Race
      *
      * @param distance the length of the racetrack (in metres/yards...)
      */
-    public Race(int distance)
+    public Race2(int distance)
     {
         // initialise instance variables
         raceLength = distance;
@@ -224,6 +223,7 @@ public class Race
             i = i + 1;
         }
     }
+
     public int getRaceLength() {
         return raceLength;
     }
