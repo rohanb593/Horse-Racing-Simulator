@@ -24,13 +24,6 @@ public class Horse
         this.horseHasFallen = false;
     }
 
-
-
-
-
-
-
-    //Other methods of class Horse
     public void fall()
     {
         this.horseHasFallen = true;

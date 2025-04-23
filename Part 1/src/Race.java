@@ -1,228 +1,208 @@
 import java.util.concurrent.TimeUnit;
 import java.lang.Math;
+import java.util.ArrayList;
 
-/**
- * A three-horse race, each horse running in its own lane
- * for a given distance
- *
- * @author McRaceface
- * @version 1.0
- */
-public class Race
-{
+public class Race {
     private final int raceLength;
-    private Horse lane1Horse;
-    private Horse lane2Horse;
-    private Horse lane3Horse;
+    private ArrayList<Horse> horses;
+    private Horse winner;
 
-    /**
-     * Constructor for objects of class Race
-     * Initially there are no horses in the lanes
-     *
-     * @param distance the length of the racetrack (in metres/yards...)
-     */
-    public Race(int distance)
-    {
-        // initialise instance variables
+    public Race(int distance) {
         raceLength = distance;
-        lane1Horse = null;
-        lane2Horse = null;
-        lane3Horse = null;
+        horses = new ArrayList<>();
+        winner = null;
+
+        // Initialize the horses
+        horses.add(new Horse('A', "Thunder", 0.8));
+        horses.add(new Horse('B', "Lightning", 0.5));
+        horses.add(new Horse('C', "Storm", 0.3));
     }
 
-    /**
-     * Adds a horse to the race in a given lane
-     *
-     * @param theHorse the horse to be added to the race
-     * @param laneNumber the lane that the horse will be added to
-     */
-    public void addHorse(Horse theHorse, int laneNumber)
-    {
-        if (laneNumber == 1)
-        {
-            lane1Horse = theHorse;
-        }
-        else if (laneNumber == 2)
-        {
-            lane2Horse = theHorse;
-        }
-        else if (laneNumber == 3)
-        {
-            lane3Horse = theHorse;
-        }
-        else
-        {
-            System.out.println("Cannot add horse to lane " + laneNumber + " because there is no such lane");
-        }
-    }
+    // ... [previous methods remain the same until startRace]
 
-    /**
-     * Start the race
-     * The horse are brought to the start and
-     * then repeatedly moved forward until the
-     * race is finished
-     */
-    public void startRace()
-    {
-        //declare a local variable to tell us when the race is finished
+    public void startRace() {
         boolean finished = false;
+        boolean allFallen = false;
 
-        //reset all the lanes (all horses not fallen and back to 0).
-        lane1Horse.goBackToStart();
-        lane2Horse.goBackToStart();
-        lane3Horse.goBackToStart();
+        for (Horse horse : horses) {
+            if (horse != null) {
+                horse.goBackToStart();
+            }
+        }
 
-        while (!finished)
-        {
-            //move each horse
-            moveHorse(lane1Horse);
-            moveHorse(lane2Horse);
-            moveHorse(lane3Horse);
+        while (!finished && !allFallen) {
+            // Move each horse
+            for (Horse horse : horses) {
+                if (horse != null) {
+                    moveHorse(horse);
+                }
+            }
 
-            //print the race positions
             printRace();
 
-            if (raceWonBy(lane1Horse)) {
-                finished = true;
-                System.out.println("The Race Winner is " + lane1Horse.getName());
-            } else if (raceWonBy(lane2Horse)) {
-                finished = true;
-                System.out.println("The Race Winner is " + lane2Horse.getName());
-            } else if (raceWonBy(lane3Horse)) {
-                finished = true;
-                System.out.println("The Race Winner is " + lane3Horse.getName());
+            // Check if any horse has won
+            for (Horse horse : horses) {
+                if (horse != null && raceWonBy(horse)) {
+                    winner = horse;
+                    System.out.println("\n" + horse.getName() + " has won the race!");
+                    finished = true;
+                    break;
+                }
             }
 
+            // Check if all horses have fallen
+            allFallen = true;
+            for (Horse horse : horses) {
+                if (horse != null && !horse.hasFallen()) {
+                    allFallen = false;
+                    break;
+                }
+            }
 
-            //wait for 100 milliseconds
+            if (allFallen) {
+                System.out.println("\nAll horses have fallen! The race is over with no winner.");
+            }
+
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
-            } catch(Exception e){}
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // After race ends, update confidences and display results
+        updateConfidences();
+        displayFinalResults();
+    }
+
+    private void updateConfidences() {
+        if (winner != null) {
+            setConfidenceWinner(winner);
+        }
+
+        for (Horse horse : horses) {
+            if (horse != null && horse != winner) {
+                setConfidenceLosers(horse);
+            }
         }
     }
 
-    /**
-     * Randomly make a horse move forward or fall depending
-     * on its confidence rating
-     * A fallen horse cannot move
-     *
-     * @param theHorse the horse to be moved
-     */
-    private void moveHorse(Horse theHorse)
-    {
-        //if the horse has fallen it cannot move,
-        //so only run if it has not fallen
-        if  (!theHorse.hasFallen())
-        {
-            //the probability that the horse will move forward depends on the confidence;
-            if (Math.random() < theHorse.getConfidence())
-            {
+    private void setConfidenceWinner(Horse horse) {
+        double currentConfidence = horse.getConfidence();
+        double newConfidence = Math.min(1.0, currentConfidence + 0.1); // Increase by 0.1, max 1.0
+        horse.setConfidence(newConfidence);
+    }
+
+    private void setConfidenceLosers(Horse horse) {
+        double currentConfidence = horse.getConfidence();
+        double penalty = horse.hasFallen() ? 0.15 : 0.05; // Higher penalty for fallen horses
+        double newConfidence = Math.max(0.1, currentConfidence - penalty); // Decrease, min 0.1
+        horse.setConfidence(newConfidence);
+    }
+
+    private void displayFinalResults() {
+        System.out.println("\nFINAL RESULTS:");
+        System.out.println("==============");
+
+        for (Horse horse : horses) {
+            if (horse != null) {
+                String status;
+                if (horse == winner) {
+                    status = "WINNER (Confidence +0.1)";
+                } else if (horse.hasFallen()) {
+                    status = "FELL (Confidence -0.15)";
+                } else {
+                    status = "LOSER (Confidence -0.05)";
+                }
+
+                System.out.println(horse.getSymbol() + ": " + horse.getName() + " - Final Confidence: " + horse.getConfidence() + " - " + status);
+
+            }
+        }
+    }
+
+    public void addHorse(Horse theHorse, int laneNumber) {
+        int index = laneNumber - 1;
+        while (horses.size() <= index) {
+            horses.add(null);
+        }
+        horses.set(index, theHorse);
+    }
+
+    private void moveHorse(Horse theHorse) {
+        if (!theHorse.hasFallen()) {
+            if (Math.random() < theHorse.getConfidence()) {
                 theHorse.moveForward();
             }
-
-            //the probability that the horse will fall is very small (max is 0.1)
-            //but will also will depends exponentially on confidence
-            //so if you double the confidence, the probability that it will fall is *2
-            if (Math.random() < (0.1*theHorse.getConfidence()*theHorse.getConfidence()))
-            {
+            if (Math.random() < (0.05*theHorse.getConfidence()*theHorse.getConfidence())) {
                 theHorse.fall();
+                System.out.println("\n" + theHorse.getName() + " has fallen!");
             }
         }
     }
 
-    /**
-     * Determines if a horse has won the race
-     *
-     * @param theHorse The horse we are testing
-     * @return true if the horse has won, false otherwise.
-     */
-    private boolean raceWonBy(Horse theHorse)
-    {
-        if (theHorse.getDistanceTravelled() == raceLength)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+
+
+    private boolean raceWonBy(Horse theHorse) {
+        return theHorse.getDistanceTravelled() == raceLength;
     }
 
-    /***
-     * Print the race on the terminal
-     */
-    private void printRace()
-    {
-        System.out.print('\u000C');  //clear the terminal window
+    private void printRace() {
+        System.out.print('\u000C');  // Clear console
 
-        multiplePrint('=',raceLength+3); //top edge of track
+        System.out.println("HORSE RACE SIMULATION");
+        multiplePrint('=', raceLength + 30);
         System.out.println();
 
-        printLane(lane1Horse);
-        System.out.println(" (Current confidence " + lane1Horse.getConfidence() + ")");
+        for (Horse horse : horses) {
+            if (horse != null) {
+                printLaneWithInfo(horse);
+                System.out.println();
+            }
+        }
 
-        printLane(lane2Horse);
-        System.out.println(" (Current confidence " + lane2Horse.getConfidence() + ")");
-
-        printLane(lane3Horse);
-        System.out.println(" (Current confidence " + lane3Horse.getConfidence() + ")");
-
-        multiplePrint('=',raceLength+3); //bottom edge of track
+        multiplePrint('=', raceLength + 30);
         System.out.println();
     }
 
-    /**
-     * print a horse's lane during the race
-     * for example
-     * |           X                      |
-     * to show how far the horse has run
-     */
-    private void printLane(Horse theHorse)
-    {
-        //calculate how many spaces are needed before
-        //and after the horse
+    private void printLaneWithInfo(Horse theHorse) {
         int spacesBefore = theHorse.getDistanceTravelled();
         int spacesAfter = raceLength - theHorse.getDistanceTravelled();
 
-        //print a | for the beginning of the lane
         System.out.print('|');
+        multiplePrint(' ', spacesBefore);
 
-        //print the spaces before the horse
-        multiplePrint(' ',spacesBefore);
-
-        //if the horse has fallen then print dead
-        //else print the horse's symbol
-        if(theHorse.hasFallen())
-        {
-            System.out.print('\u2322');
-        }
-        else
-        {
+        if(theHorse.hasFallen()) {
+            System.out.print('⌢'); // Fallen symbol
+        } else {
             System.out.print(theHorse.getSymbol());
         }
 
-        //print the spaces after the horse
-        multiplePrint(' ',spacesAfter);
-
-        //print the | for the end of the track
+        multiplePrint(' ', spacesAfter);
         System.out.print('|');
+
+        // Display horse info alongside the track
+        String status = theHorse.hasFallen() ? " (Fallen)" : "";
+        System.out.print("  " + theHorse.getSymbol() + ": " + theHorse.getName() +
+                " (Conf: " + String.format("%.2f", theHorse.getConfidence()) + ")" + status);
     }
 
-
-    /***
-     * print a character a given number of times.
-     * e.g. printmany('x',5) will print: xxxxx
-     *
-     * @param aChar the character to Print
-     */
-    private void multiplePrint(char aChar, int times)
-    {
-        int i = 0;
-        while (i < times)
-        {
+    private void multiplePrint(char aChar, int times) {
+        for (int i = 0; i < times; i++) {
             System.out.print(aChar);
-            i = i + 1;
         }
     }
-}
 
+
+
+    public static void main(String[] args) {
+        // Create a race with 30 units length
+        Race race = new Race(30);
+
+
+        // Alternatively, you could add more horses:
+        race.addHorse(new Horse('D', "Rain", 0.85), 4);
+        race.startRace();
+    }
+
+}
