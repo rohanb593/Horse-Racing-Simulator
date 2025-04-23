@@ -15,6 +15,9 @@ public class Main {
         race.addHorse(horse2, 2);
         race.addHorse(horse3, 3);
 
+
+
+
         // Start the race
         race.startRace();
 

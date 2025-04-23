@@ -127,6 +127,9 @@ public class Race {
             horses.add(null);
         }
         horses.set(index, theHorse);
+
+
+
     }
 
     private void moveHorse(Horse theHorse) {
