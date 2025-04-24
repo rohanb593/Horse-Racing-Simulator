@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Race {
     private final int raceLength;
-    private ArrayList<Horse> horses;
+    private final ArrayList<Horse> horses;
     private Horse winner;
 
     public Race(int distance) {
@@ -176,7 +176,7 @@ public class Race {
         multiplePrint(' ', spacesBefore);
 
         if(theHorse.hasFallen()) {
-            System.out.print('⌢'); // Fallen symbol
+            System.out.print('❌' ); // Fallen symbol
         } else {
             System.out.print(theHorse.getSymbol());
         }
@@ -202,9 +202,11 @@ public class Race {
         // Create a race with 30 units length
         Race race = new Race(30);
 
+        // Add a horse with initial symbol 'R' and then change it to 'D'
+        Horse rain = new Horse('R', "Rain", 0.85);
+        rain.setSymbol('D');  // Using setSymbol() to change the symbol
+        race.addHorse(rain, 4);
 
-        // Alternatively, you could add more horses:
-        race.addHorse(new Horse('D', "Rain", 0.85), 4);
         race.startRace();
     }
 

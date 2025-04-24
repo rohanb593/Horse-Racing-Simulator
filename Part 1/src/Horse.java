@@ -1,13 +1,12 @@
-
 /**
  * Write a description of class Horse here.
  *
- * @Author
- * @version (a version number or a date)
+ * @Author Rohan Bhagat
+ * @version 24/04/2025
  */
 public class Horse
 {
-    private String horseName;
+    private final String horseName;
     private char horseSymbol;
     private double horseConfidence;
     private int distanceTravelled;
@@ -72,7 +71,9 @@ public class Horse
     {
         if (newConfidence >= 0 && newConfidence <= 1){
             this.horseConfidence = newConfidence;
-        } else {
+        }
+        else
+        {
             throw new IllegalArgumentException("Confidence should be between 0 and 1");
         }
     }
