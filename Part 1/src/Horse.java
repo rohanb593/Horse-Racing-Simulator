@@ -1,4 +1,3 @@
-
 /**
  * Write a description of class Horse here.
  *
@@ -13,6 +12,9 @@ public class Horse
     private int distanceTravelled;
     private boolean horseHasFallen;
     /**
+     *
+     *
+     *
      * Constructor for objects of class Horse
      */
     public Horse(char horseSymbol, String horseName, double horseConfidence)
@@ -24,13 +26,6 @@ public class Horse
         this.horseHasFallen = false;
     }
 
-
-
-
-
-
-
-    //Other methods of class Horse
     public void fall()
     {
         this.horseHasFallen = true;

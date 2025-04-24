@@ -2,29 +2,27 @@ import java.util.concurrent.TimeUnit;
 import java.lang.Math;
 import java.util.ArrayList;
 
-public class Race {
+public class Race2 {
     private final int raceLength;
-    private ArrayList<Horse> horses;
-    private Horse winner;
+    private ArrayList<Horse2> horses;
+    private Horse2 winner;
 
-    public Race(int distance) {
+    public Race2(int distance) {
         raceLength = distance;
         horses = new ArrayList<>();
         winner = null;
 
         // Initialize the horses
-        horses.add(new Horse('A', "Thunder", 0.8));
-        horses.add(new Horse('B', "Lightning", 0.5));
-        horses.add(new Horse('C', "Storm", 0.3));
+        horses.add(new Horse2('A', "Thunder", 0.8));
+        horses.add(new Horse2('B', "Lightning", 0.5));
+        horses.add(new Horse2('C', "Storm", 0.3));
     }
-
-    // ... [previous methods remain the same until startRace]
 
     public void startRace() {
         boolean finished = false;
         boolean allFallen = false;
 
-        for (Horse horse : horses) {
+        for (Horse2 horse : horses) {
             if (horse != null) {
                 horse.goBackToStart();
             }
@@ -32,7 +30,7 @@ public class Race {
 
         while (!finished && !allFallen) {
             // Move each horse
-            for (Horse horse : horses) {
+            for (Horse2 horse : horses) {
                 if (horse != null) {
                     moveHorse(horse);
                 }
@@ -41,7 +39,7 @@ public class Race {
             printRace();
 
             // Check if any horse has won
-            for (Horse horse : horses) {
+            for (Horse2 horse : horses) {
                 if (horse != null && raceWonBy(horse)) {
                     winner = horse;
                     System.out.println("\n" + horse.getName() + " has won the race!");
@@ -52,7 +50,7 @@ public class Race {
 
             // Check if all horses have fallen
             allFallen = true;
-            for (Horse horse : horses) {
+            for (Horse2 horse : horses) {
                 if (horse != null && !horse.hasFallen()) {
                     allFallen = false;
                     break;
@@ -80,20 +78,20 @@ public class Race {
             setConfidenceWinner(winner);
         }
 
-        for (Horse horse : horses) {
+        for (Horse2 horse : horses) {
             if (horse != null && horse != winner) {
                 setConfidenceLosers(horse);
             }
         }
     }
 
-    private void setConfidenceWinner(Horse horse) {
+    private void setConfidenceWinner(Horse2 horse) {
         double currentConfidence = horse.getConfidence();
         double newConfidence = Math.min(1.0, currentConfidence + 0.1); // Increase by 0.1, max 1.0
         horse.setConfidence(newConfidence);
     }
 
-    private void setConfidenceLosers(Horse horse) {
+    private void setConfidenceLosers(Horse2 horse) {
         double currentConfidence = horse.getConfidence();
         double penalty = horse.hasFallen() ? 0.15 : 0.05; // Higher penalty for fallen horses
         double newConfidence = Math.max(0.1, currentConfidence - penalty); // Decrease, min 0.1
@@ -104,7 +102,7 @@ public class Race {
         System.out.println("\nFINAL RESULTS:");
         System.out.println("==============");
 
-        for (Horse horse : horses) {
+        for (Horse2 horse : horses) {
             if (horse != null) {
                 String status;
                 if (horse == winner) {
@@ -116,23 +114,19 @@ public class Race {
                 }
 
                 System.out.println(horse.getSymbol() + ": " + horse.getName() + " - Final Confidence: " + horse.getConfidence() + " - " + status);
-
             }
         }
     }
 
-    public void addHorse(Horse theHorse, int laneNumber) {
+    public void addHorse(Horse2 theHorse, int laneNumber) {
         int index = laneNumber - 1;
         while (horses.size() <= index) {
             horses.add(null);
         }
         horses.set(index, theHorse);
-
-
-
     }
 
-    private void moveHorse(Horse theHorse) {
+    public void moveHorse(Horse2 theHorse) {
         if (!theHorse.hasFallen()) {
             if (Math.random() < theHorse.getConfidence()) {
                 theHorse.moveForward();
@@ -144,9 +138,7 @@ public class Race {
         }
     }
 
-
-
-    private boolean raceWonBy(Horse theHorse) {
+    public boolean raceWonBy(Horse2 theHorse) {
         return theHorse.getDistanceTravelled() == raceLength;
     }
 
@@ -157,7 +149,7 @@ public class Race {
         multiplePrint('=', raceLength + 30);
         System.out.println();
 
-        for (Horse horse : horses) {
+        for (Horse2 horse : horses) {
             if (horse != null) {
                 printLaneWithInfo(horse);
                 System.out.println();
@@ -168,7 +160,7 @@ public class Race {
         System.out.println();
     }
 
-    private void printLaneWithInfo(Horse theHorse) {
+    private void printLaneWithInfo(Horse2 theHorse) {
         int spacesBefore = theHorse.getDistanceTravelled();
         int spacesAfter = raceLength - theHorse.getDistanceTravelled();
 
@@ -196,16 +188,12 @@ public class Race {
         }
     }
 
-
-
     public static void main(String[] args) {
         // Create a race with 30 units length
-        Race race = new Race(30);
-
+        Race2 race = new Race2(30);
 
         // Alternatively, you could add more horses:
-        race.addHorse(new Horse('D', "Rain", 0.85), 4);
+        race.addHorse(new Horse2('D', "Rain", 0.85), 4);
         race.startRace();
     }
-
 }
