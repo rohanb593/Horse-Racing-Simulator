@@ -33,14 +33,12 @@ public class Race2 {
 
     public void moveHorse(Horse2 theHorse) {
         if (!theHorse.hasFallen()) {
-            // Weather-modified movement
             if (Math.random() < theHorse.getConfidence()) {
                 if (Math.random() < theHorse.speedModifier) {
                     theHorse.moveForward();
                 }
             }
 
-            // Weather-modified fall chance
             double fallChance = 0.05 * theHorse.getConfidence() * theHorse.getConfidence();
             if (currentWeather.equals("Muddy")) {
                 fallChance *= 1.5;

@@ -1,12 +1,8 @@
-import java.io.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
 public class HorseHistory {
-    private static final String CSV_HEADER = "HorseName,Symbol,Date,Weather,Distance,FinishTime,FinishPosition,ConfidenceBefore,ConfidenceAfter\n";
-    private static final String HISTORY_DIR = "horse_history";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     private Map<String, List<RaceRecord>> horseRecords = new HashMap<>();
 
     public static class RaceRecord {
@@ -35,13 +31,6 @@ public class HorseHistory {
         }
     }
 
-    public HorseHistory() {
-        File dir = new File(HISTORY_DIR);
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-    }
-
     public void recordRace(Horse2 horse, String weather, int distance,
                            double finishTime, int finishPosition,
                            double confidenceBefore, double confidenceAfter) {
@@ -49,38 +38,10 @@ public class HorseHistory {
                 distance, finishTime, finishPosition,
                 confidenceBefore, confidenceAfter);
 
-        // Add to in-memory records
         if (!horseRecords.containsKey(horse.getName())) {
             horseRecords.put(horse.getName(), new ArrayList<>());
         }
         horseRecords.get(horse.getName()).add(record);
-
-        // Save to CSV
-        saveToCSV(record);
-    }
-
-    private void saveToCSV(RaceRecord record) {
-        String filename = HISTORY_DIR + File.separator + record.horseName + "_history.csv";
-        boolean fileExists = new File(filename).exists();
-
-        try (PrintWriter writer = new PrintWriter(new FileWriter(filename, true))) {
-            if (!fileExists) {
-                writer.write(CSV_HEADER);
-            }
-
-            writer.write(String.format("%s,%c,%s,%s,%d,%.2f,%d,%.2f,%.2f\n",
-                    record.horseName,
-                    record.symbol,
-                    DATE_FORMAT.format(record.date),
-                    record.weather,
-                    record.distance,
-                    record.finishTime,
-                    record.finishPosition,
-                    record.confidenceBefore,
-                    record.confidenceAfter));
-        } catch (IOException e) {
-            System.err.println("Error writing to history file: " + e.getMessage());
-        }
     }
 
     public List<RaceRecord> getHorseHistory(String horseName) {
@@ -144,7 +105,6 @@ public class HorseHistory {
         System.out.println("Win Ratio: " + String.format("%.1f%%", getWinRatio(horseName) * 100));
         System.out.println("Best Time: " + String.format("%.2f", getBestTime(horseName, null)));
 
-        // Weather-specific best times
         System.out.println("\nWeather-Specific Best Times:");
         for (String weather : new String[]{"Sunny", "Rainy", "Muddy", "Icy"}) {
             double bestTime = getBestTime(horseName, weather);
