@@ -5,20 +5,17 @@ import java.util.ArrayList;
 public class Race {
     private final int raceLength;
     private final ArrayList<Horse> horses;
-    private Horse winner;
 
     public Race(int distance) {
         raceLength = distance;
         horses = new ArrayList<>();
-        winner = null;
+
 
         // Initialize the horses
         horses.add(new Horse('A', "Thunder", 0.8));
         horses.add(new Horse('B', "Lightning", 0.5));
         horses.add(new Horse('C', "Storm", 0.3));
     }
-
-    // ... [previous methods remain the same until startRace]
 
     public void startRace() {
         boolean finished = false;
@@ -43,8 +40,8 @@ public class Race {
             // Check if any horse has won
             for (Horse horse : horses) {
                 if (horse != null && raceWonBy(horse)) {
-                    winner = horse;
-                    System.out.println("\n" + horse.getName() + " has won the race!");
+
+                    System.out.println("\n" + horse.getName() + " has won the race!!!!!");
                     finished = true;
                     break;
                 }
@@ -69,56 +66,6 @@ public class Race {
                 throw new RuntimeException(e);
             }
         }
-
-        // After race ends, update confidences and display results
-        updateConfidences();
-        displayFinalResults();
-    }
-
-    private void updateConfidences() {
-        if (winner != null) {
-            setConfidenceWinner(winner);
-        }
-
-        for (Horse horse : horses) {
-            if (horse != null && horse != winner) {
-                setConfidenceLosers(horse);
-            }
-        }
-    }
-
-    private void setConfidenceWinner(Horse horse) {
-        double currentConfidence = horse.getConfidence();
-        double newConfidence = Math.min(1.0, currentConfidence + 0.1); // Increase by 0.1, max 1.0
-        horse.setConfidence(newConfidence);
-    }
-
-    private void setConfidenceLosers(Horse horse) {
-        double currentConfidence = horse.getConfidence();
-        double penalty = horse.hasFallen() ? 0.15 : 0.05; // Higher penalty for fallen horses
-        double newConfidence = Math.max(0.1, currentConfidence - penalty); // Decrease, min 0.1
-        horse.setConfidence(newConfidence);
-    }
-
-    private void displayFinalResults() {
-        System.out.println("\nFINAL RESULTS:");
-        System.out.println("==============");
-
-        for (Horse horse : horses) {
-            if (horse != null) {
-                String status;
-                if (horse == winner) {
-                    status = "WINNER (Confidence +0.1)";
-                } else if (horse.hasFallen()) {
-                    status = "FELL (Confidence -0.15)";
-                } else {
-                    status = "LOSER (Confidence -0.05)";
-                }
-
-                System.out.println(horse.getSymbol() + ": " + horse.getName() + " - Final Confidence: " + horse.getConfidence() + " - " + status);
-
-            }
-        }
     }
 
     public void addHorse(Horse theHorse, int laneNumber) {
@@ -127,37 +74,38 @@ public class Race {
             horses.add(null);
         }
         horses.set(index, theHorse);
-
-
-
     }
 
     private void moveHorse(Horse theHorse) {
         if (!theHorse.hasFallen()) {
             if (Math.random() < theHorse.getConfidence()) {
                 theHorse.moveForward();
-                System.out.println(theHorse.getSymbol() + ": " + theHorse.getName() + " moved forward");
+
+                // Check if this move made the horse win the race
+                if (raceWonBy(theHorse)) {
+                    double newConfidence = Math.min(1.0, theHorse.getConfidence() + 0.1);
+                    theHorse.setConfidence(newConfidence);
+                }
             }
-            else
-            {
-                System.out.println(theHorse.getSymbol() + ": " + theHorse.getName() + " did not move");
-            }
+
             if (Math.random() < (0.05*theHorse.getConfidence()*theHorse.getConfidence())) {
                 theHorse.fall();
                 System.out.println("\n" + theHorse.getSymbol() + ": " + theHorse.getName() + " has fallen!");
+                theHorse.setConfidence(theHorse.getConfidence() - 0.1);
             }
         }
     }
 
 
-
     private boolean raceWonBy(Horse theHorse) {
-        return theHorse.getDistanceTravelled() == raceLength;
+        if (theHorse.getDistanceTravelled() == raceLength) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void printRace() {
-        System.out.print('\u000C');  // Clear console
-
         System.out.println("HORSE RACE SIMULATION");
         multiplePrint('=', raceLength + 30);
         System.out.println();
@@ -192,6 +140,7 @@ public class Race {
         // Display horse info alongside the track
         String status;
         if (theHorse.hasFallen()) {
+
             status = " (Fallen)";
         }
         else
@@ -199,28 +148,28 @@ public class Race {
             status = "";
         }
         System.out.print("  " + theHorse.getSymbol() + ": " + theHorse.getName() +
-                " (Conf: " + String.format("%.2f", theHorse.getConfidence()) + ")" + status);
+                " (Current Confidence: " + String.format("%.1f", theHorse.getConfidence()) + ")" + status);
     }
 
-    private void multiplePrint(char aChar, int times) {
-        for (int i = 0; i < times; i++) {
+    private void multiplePrint(char aChar, int times)
+    {
+        int i = 0;
+        while (i < times)
+        {
             System.out.print(aChar);
+            i = i + 1;
         }
     }
-
-
-
-
 
     public static void main(String[] args) {
         // Create a race with 30 units length
         Race race = new Race(30);
 
         // Add a horse with initial symbol 'R' and then change it to 'D'
-        Horse rain = new Horse('R', "Rain", 0.85);
-        rain.setSymbol('D');  // Using setSymbol() to change the symbol
-        rain.setConfidence(0.7);
-        race.addHorse(rain, 4);
+        Horse horse = new Horse('R', "Rain", 0.85);
+        horse.setSymbol('D');  // Using setSymbol() to change the symbol
+        horse.setConfidence(0.7);
+        race.addHorse(horse, 4);
 
 
         race.startRace();
