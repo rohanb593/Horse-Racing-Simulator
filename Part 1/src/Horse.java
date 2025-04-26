@@ -51,20 +51,29 @@ public class Horse
         return horseSymbol;
     }
 
+    public boolean hasFallen()
+    {
+        return horseHasFallen;
+    }
+
     public void goBackToStart()
     {
         this.distanceTravelled = 0;
         this.horseHasFallen = false;
     }
 
-    public boolean hasFallen()
-    {
-        return horseHasFallen;
-    }
+
 
     public void moveForward()
     {
-        this.distanceTravelled++;
+        if (!this.horseHasFallen)
+        {
+            this.distanceTravelled++;
+        }
+        else
+        {
+            System.out.println("Horse has fallen");
+        }
     }
 
     public void setConfidence(double newConfidence)

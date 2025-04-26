@@ -136,10 +136,15 @@ public class Race {
         if (!theHorse.hasFallen()) {
             if (Math.random() < theHorse.getConfidence()) {
                 theHorse.moveForward();
+                System.out.println(theHorse.getSymbol() + ": " + theHorse.getName() + " moved forward");
+            }
+            else
+            {
+                System.out.println(theHorse.getSymbol() + ": " + theHorse.getName() + " did not move");
             }
             if (Math.random() < (0.05*theHorse.getConfidence()*theHorse.getConfidence())) {
                 theHorse.fall();
-                System.out.println("\n" + theHorse.getName() + " has fallen!");
+                System.out.println("\n" + theHorse.getSymbol() + ": " + theHorse.getName() + " has fallen!");
             }
         }
     }
@@ -185,7 +190,14 @@ public class Race {
         System.out.print('|');
 
         // Display horse info alongside the track
-        String status = theHorse.hasFallen() ? " (Fallen)" : "";
+        String status;
+        if (theHorse.hasFallen()) {
+            status = " (Fallen)";
+        }
+        else
+        {
+            status = "";
+        }
         System.out.print("  " + theHorse.getSymbol() + ": " + theHorse.getName() +
                 " (Conf: " + String.format("%.2f", theHorse.getConfidence()) + ")" + status);
     }
@@ -198,6 +210,8 @@ public class Race {
 
 
 
+
+
     public static void main(String[] args) {
         // Create a race with 30 units length
         Race race = new Race(30);
@@ -205,7 +219,9 @@ public class Race {
         // Add a horse with initial symbol 'R' and then change it to 'D'
         Horse rain = new Horse('R', "Rain", 0.85);
         rain.setSymbol('D');  // Using setSymbol() to change the symbol
+        rain.setConfidence(0.7);
         race.addHorse(rain, 4);
+
 
         race.startRace();
     }
