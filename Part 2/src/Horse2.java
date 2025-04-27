@@ -9,6 +9,8 @@ public class Horse2 {
     private String shape;
     private Color color;
     public double speedModifier = 1.0;
+    private int racesWon;
+    private int racesParticipated;
 
     public Horse2(char horseSymbol, String horseName, double horseConfidence, String shape, Color color) {
         this.horseSymbol = horseSymbol;
@@ -18,8 +20,20 @@ public class Horse2 {
         this.horseHasFallen = false;
         this.shape = shape;
         this.color = color;
+
+
     }
 
+    public double getWinRatio() {
+        return racesParticipated == 0 ? 0 : (double) racesWon / racesParticipated;
+    }
+
+    public void recordRaceParticipation(boolean won) {
+        racesParticipated++;
+        if (won) {
+            racesWon++;
+        }
+    }
     public void applyWeatherEffect(String weather) {
         switch (weather) {
             case "Muddy":

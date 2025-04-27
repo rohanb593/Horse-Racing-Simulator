@@ -1,6 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-
+import java.awt.event.ActionEvent;
 
 public class RaceGUI {
     private Race2 race;
@@ -11,28 +11,44 @@ public class RaceGUI {
     private JTextArea infoArea;
     private Timer animationTimer;
     private Timer raceTimer;
-    private boolean raceInProgress;
+    private boolean raceInProgress = false;
     private final int MAX_HORSES = 10;
-    private JMenuBar menuBar;
-    private JMenuItem addHorseMenuItem;
     private JComboBox<String> weatherCombo;
     private static final int RACE_LENGTH = 50;
+    private AddHorsePanel addHorsePanel;
 
-    private static final String[] SHAPE_OPTIONS = {"Rectangle", "Circle", "Triangle", "Diamond", "Star"};
-    private static final String[] WEATHER_OPTIONS = {"Sunny", "Rainy", "Muddy", "Icy"};
-    private static final Color[] COLOR_OPTIONS = {
+    private BettingPanel bettingPanel;
+    private JSplitPane splitPane;
+    private PerformanceMetrics performanceMetrics;
+    private PerformancePanel performancePanel;
+    private JTabbedPane leftTabbedPane;
+    private int raceDurationTicks = 0;
+    private JTabbedPane mainTabbedPane;
+
+
+    public static final String[] SHAPE_OPTIONS = {"Rectangle", "Circle", "Triangle", "Diamond", "Star"};
+    public static final String[] WEATHER_OPTIONS = {"Sunny", "Rainy", "Muddy", "Icy"};
+    public static final Color[] COLOR_OPTIONS = {
             Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW,
             Color.MAGENTA, Color.CYAN, Color.ORANGE, Color.PINK
     };
 
+    public void appendToInfoArea(String message) {
+        infoArea.append(message + "\n");
+    }
+
+    public Horse2[] getHorses() {
+        return horses;
+    }
+
     public RaceGUI() {
-        racePanel = new RacePanel(null, null); // Initialize first with null values
+        racePanel = new RacePanel(null, null);
         initializeRaceWithDefaults();
         createAndShowGUI();
     }
 
     private void initializeRaceWithDefaults() {
-        race = new Race2(RACE_LENGTH); // Use the constant instead of racePanel.RACE_LENGTH
+        race = new Race2(RACE_LENGTH);
         horses = new Horse2[MAX_HORSES];
 
         horses[0] = new Horse2('A', "Thunder", 0.9, "Rectangle", Color.RED);
@@ -47,27 +63,68 @@ public class RaceGUI {
             }
         }
 
-        // Now update the racePanel with the actual race and horses
         racePanel.setRace(race);
         racePanel.setHorses(horses);
+    }
+
+    public void showBettingPanel() {
+        bettingPanel.updateHorses(horses);
+        splitPane.setLeftComponent(bettingPanel);
+        splitPane.revalidate();
+        splitPane.repaint();
+    }
+
+    public void showAddHorsePanel() {
+        splitPane.setLeftComponent(addHorsePanel);
+        splitPane.revalidate();
+        splitPane.repaint();
     }
 
     private void createAndShowGUI() {
         frame = new JFrame("Horse Race");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
 
-        createMenuBar();
+        // Initialize horses array first
+        horses = new Horse2[MAX_HORSES];
+        initializeRaceWithDefaults();
 
+        // Now create panels
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setDividerLocation(300);
+        splitPane.setResizeWeight(0.3);
+
+        addHorsePanel = new AddHorsePanel(this);
+        bettingPanel = new BettingPanel(this, horses);  // Now horses is initialized
+
+        splitPane.setLeftComponent(addHorsePanel);
+
+        // Create main split pane (left for controls, right for race)
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setDividerLocation(300);
+        splitPane.setResizeWeight(0.3);
+
+        // Create control panels
+        addHorsePanel = new AddHorsePanel(this);
+        bettingPanel = new BettingPanel(this, horses);
+
+        // Start with horse panel visible
+        splitPane.setLeftComponent(addHorsePanel);
+
+        // Right Panel - Race and Controls
+        JPanel rightPanel = new JPanel(new BorderLayout());
+
+        // Race Panel
         racePanel = new RacePanel(race, horses);
-        frame.add(racePanel, BorderLayout.CENTER);
+        rightPanel.add(racePanel, BorderLayout.CENTER);
 
+        // Bottom Control Panel
         JPanel controlPanel = new JPanel(new FlowLayout());
 
+        // Weather Controls
         JPanel weatherPanel = new JPanel();
         weatherPanel.add(new JLabel("Weather:"));
         weatherCombo = new JComboBox<>(WEATHER_OPTIONS);
-        weatherCombo.addActionListener(_ -> {
+        weatherCombo.addActionListener(e -> {
             String currentWeather = (String) weatherCombo.getSelectedItem();
             racePanel.setCurrentWeather(currentWeather);
             applyWeatherEffects();
@@ -76,26 +133,76 @@ public class RaceGUI {
         weatherPanel.add(weatherCombo);
         controlPanel.add(weatherPanel);
 
+        // Start Button
         startButton = new JButton("Start Race");
-        startButton.addActionListener(_ -> startRace());
+        startButton.addActionListener(e -> startRace());
         controlPanel.add(startButton);
 
+        // Results Button
+        JButton resultsButton = new JButton("Show Results");
+        resultsButton.addActionListener(e -> showRaceResults());
+        controlPanel.add(resultsButton);
+
+        // Info Area
         infoArea = new JTextArea(5, 80);
         infoArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(infoArea);
 
-        frame.add(controlPanel, BorderLayout.NORTH);
-        frame.add(scrollPane, BorderLayout.SOUTH);
+        rightPanel.add(controlPanel, BorderLayout.NORTH);
+        rightPanel.add(scrollPane, BorderLayout.SOUTH);
 
-        animationTimer = new Timer(50, _ -> racePanel.repaint());
+        splitPane.setRightComponent(rightPanel);
+        frame.add(splitPane);
+
+        // Initialize timers
+        animationTimer = new Timer(50, e -> racePanel.repaint());
         setupRaceTimer();
 
         frame.pack();
+        frame.setMinimumSize(new Dimension(1000, 600));
         frame.setVisible(true);
+
+        performanceMetrics = new PerformanceMetrics();
+
+        // Create tabbed pane for left side
+        leftTabbedPane = new JTabbedPane();
+        addHorsePanel = new AddHorsePanel(this);
+        bettingPanel = new BettingPanel(this, horses);
+        performancePanel = new PerformancePanel(performanceMetrics, horses);
+
+        leftTabbedPane.addTab("Horses", addHorsePanel);
+        leftTabbedPane.addTab("Betting", bettingPanel);
+        leftTabbedPane.addTab("Performance", performancePanel);
+
+        splitPane.setLeftComponent(leftTabbedPane);
+    }
+
+    private void showRaceResults() {
+        if (raceInProgress) {
+            JOptionPane.showMessageDialog(frame,
+                    "Race is still in progress!",
+                    "Race Status",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        StringBuilder results = new StringBuilder("\n--- RACE RESULTS ---\n");
+        for (Horse2 horse : horses) {
+            if (horse != null) {
+                results.append(horse.getSymbol())
+                        .append(": ").append(horse.getName())
+                        .append(" - Distance: ").append(horse.getDistanceTravelled())
+                        .append(" - ").append(horse.hasFallen() ? "FALLEN" : "FINISHED")
+                        .append("\n");
+            }
+        }
+        infoArea.append(results.toString());
     }
 
     private void setupRaceTimer() {
-        raceTimer = new Timer(100, _ -> {
+        raceTimer = new Timer(100, e -> {
+            raceDurationTicks++;  // Track each tick
+
             if (!raceInProgress) return;
 
             boolean allHorsesFallen = true;
@@ -157,19 +264,7 @@ public class RaceGUI {
         }
     }
 
-    private void createMenuBar() {
-        menuBar = new JMenuBar();
-
-        JMenu optionsMenu = new JMenu("Options");
-        addHorseMenuItem = new JMenuItem("Add Horse");
-        addHorseMenuItem.addActionListener(_ -> addNewHorse());
-
-        optionsMenu.add(addHorseMenuItem);
-        menuBar.add(optionsMenu);
-        frame.setJMenuBar(menuBar);
-    }
-
-    private void addNewHorse() {
+    public void addNewHorse(String name, double confidence, String shape, Color color) {
         int nextAvailableSlot = -1;
         for (int i = 0; i < horses.length; i++) {
             if (horses[i] == null) {
@@ -185,64 +280,34 @@ public class RaceGUI {
             return;
         }
 
-        JPanel panel = new JPanel(new GridLayout(5, 2));
-        JTextField nameField = new JTextField();
-        JTextField confidenceField = new JTextField();
-        JComboBox<String> shapeCombo = new JComboBox<>(SHAPE_OPTIONS);
-        JComboBox<Color> colorCombo = getColorJComboBox();
-
-        panel.add(new JLabel("Horse Name:"));
-        panel.add(nameField);
-        panel.add(new JLabel("Confidence (0.1-1.0):"));
-        panel.add(confidenceField);
-        panel.add(new JLabel("Shape:"));
-        panel.add(shapeCombo);
-        panel.add(new JLabel("Color:"));
-        panel.add(colorCombo);
-
-        int result = JOptionPane.showConfirmDialog(frame, panel,
-                "Add New Horse", JOptionPane.OK_CANCEL_OPTION);
-
-        if (result == JOptionPane.OK_OPTION) {
-            try {
-                String name = nameField.getText().trim();
-                double confidence = Double.parseDouble(confidenceField.getText());
-                String shape = (String)shapeCombo.getSelectedItem();
-                Color color = (Color)colorCombo.getSelectedItem();
-
-                if (name.isEmpty()) {
-                    throw new IllegalArgumentException("Name cannot be empty");
-                }
-
-                if (confidence < 0.1 || confidence > 1.0) {
-                    throw new IllegalArgumentException("Confidence must be between 0.1 and 1.0");
-                }
-
-                char symbol = (char) ('A' + nextAvailableSlot);
-                Horse2 newHorse = new Horse2(symbol, name, confidence, shape, color);
-                newHorse.applyWeatherEffect(racePanel.getCurrentWeather());
-                horses[nextAvailableSlot] = newHorse;
-                race.addHorse(newHorse, nextAvailableSlot + 1);
-
-                racePanel.repaint();
-                infoArea.append("Added new horse: " + name + " (" + shape + ")\n");
-
-                if (nextAvailableSlot == MAX_HORSES - 1) {
-                    addHorseMenuItem.setEnabled(false);
-                }
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(frame,
-                        "Invalid confidence value. Please enter a number between 0.1 and 1.0",
-                        "Input Error", JOptionPane.ERROR_MESSAGE);
-            } catch (IllegalArgumentException e) {
-                JOptionPane.showMessageDialog(frame,
-                        e.getMessage(),
-                        "Input Error", JOptionPane.ERROR_MESSAGE);
+        try {
+            if (name.isEmpty()) {
+                throw new IllegalArgumentException("Name cannot be empty");
             }
+
+            if (confidence < 0.1 || confidence > 1.0) {
+                throw new IllegalArgumentException("Confidence must be between 0.1 and 1.0");
+            }
+
+            char symbol = (char) ('A' + nextAvailableSlot);
+            Horse2 newHorse = new Horse2(symbol, name, confidence, shape, color);
+            newHorse.applyWeatherEffect(racePanel.getCurrentWeather());
+            horses[nextAvailableSlot] = newHorse;
+            race.addHorse(newHorse, nextAvailableSlot + 1);
+
+            racePanel.repaint();
+            infoArea.append("Added new horse: " + name + " (" + shape + ")\n");
+
+            if (nextAvailableSlot == MAX_HORSES - 1) {
+                addHorsePanel.disableAdding();
+            }
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(frame,
+                    e.getMessage(),
+                    "Input Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    private JComboBox<Color> getColorJComboBox() {
+    public JComboBox<Color> getColorJComboBox() {
         JComboBox<Color> colorCombo = new JComboBox<>(COLOR_OPTIONS);
         colorCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -280,6 +345,13 @@ public class RaceGUI {
         raceTimer.stop();
         animationTimer.stop();
 
+        Horse2 winner = findWinningHorse();
+        performanceMetrics.recordRace(horses, racePanel.getCurrentWeather(),
+                RACE_LENGTH, raceDurationTicks);
+
+        // Reset for next race
+        raceDurationTicks = 0;
+
         SwingUtilities.invokeLater(() -> {
             infoArea.append(message + "\n");
             startButton.setEnabled(true);
@@ -287,7 +359,18 @@ public class RaceGUI {
         });
     }
 
+    private Horse2 findWinningHorse() {
+        for (Horse2 horse : horses) {
+            if (horse != null && race.raceWonBy(horse)) {
+                return horse;
+            }
+        }
+        return null;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new RaceGUI());
     }
+
+
 }
