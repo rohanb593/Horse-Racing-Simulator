@@ -4,6 +4,8 @@
  * @Author Rohan Bhagat
  * @version 24/04/2025
  */
+
+// there should have been a merge
 public class Horse
 {
     private final String horseName;
