@@ -4,18 +4,11 @@ import java.util.ArrayList;
 
 public class Race2 {
     private final int raceLength;
-    private ArrayList<Horse2> horses;
+    private final ArrayList<Horse2> horses;
     private String currentWeather = "Sunny";
     private Horse2 winner;
 
-    public void setWeather(String weather) {
-        this.currentWeather = weather;
-        for (Horse2 horse : horses) {
-            if (horse != null) {
-                horse.applyWeatherEffect(weather);
-            }
-        }
-    }
+
 
     public Race2(int distance) {
         raceLength = distance;

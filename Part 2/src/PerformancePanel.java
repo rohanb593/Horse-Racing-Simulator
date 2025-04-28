@@ -33,8 +33,7 @@ public class PerformancePanel extends JPanel {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                           boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Horse2) {
-                    Horse2 horse = (Horse2) value;
+                if (value instanceof Horse2 horse) {
                     setText(horse.getName() + " (" + horse.getSymbol() + ")");
                 }
                 return this;

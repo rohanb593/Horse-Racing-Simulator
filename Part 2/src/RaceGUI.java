@@ -45,7 +45,7 @@ public class RaceGUI {
         performanceMetrics = new PerformanceMetrics();
         racePanel = new RacePanel(null, null);
         initializeRaceWithDefaults();
-        createAndShowGUI();
+
     }
 
     private void initializeRaceWithDefaults() {
@@ -63,14 +63,11 @@ public class RaceGUI {
                 race.addHorse(horses[i], i + 1);
             }
         }
-
-        racePanel.setRace(race);
-        racePanel.setHorses(horses);
     }
 
     public void updateAllHorseDropdowns() {
-        bettingPanel.updateHorses(horses);
-        performancePanel.updateHorses(horses);
+        if (bettingPanel != null) bettingPanel.updateHorses(horses);
+        if (performancePanel != null) performancePanel.updateHorses(horses);
     }
 
 
@@ -83,33 +80,21 @@ public class RaceGUI {
         frame = new JFrame("Horse Race");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        performanceMetrics = new PerformanceMetrics();
-        // Initialize horses array first
-        horses = new Horse2[MAX_HORSES];
-        initializeRaceWithDefaults();
-
-        // Now create panels
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(300);
-        splitPane.setResizeWeight(0.3);
-
-        addHorsePanel = new AddHorsePanel(this);
-        bettingPanel = new BettingPanel(this, horses);  // Now horses is initialized
-        performancePanel = new PerformancePanel(performanceMetrics, horses);
-
-        splitPane.setLeftComponent(addHorsePanel);
-
         // Create main split pane (left for controls, right for race)
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(300);
         splitPane.setResizeWeight(0.3);
 
         // Create control panels
         addHorsePanel = new AddHorsePanel(this);
         bettingPanel = new BettingPanel(this, horses);
+        performancePanel = new PerformancePanel(performanceMetrics, horses);
 
-        // Start with horse panel visible
-        splitPane.setLeftComponent(addHorsePanel);
+        // Create tabbed pane for left side
+        JTabbedPane leftTabbedPane = new JTabbedPane();
+        leftTabbedPane.addTab("Horses", addHorsePanel);
+        leftTabbedPane.addTab("Betting", bettingPanel);
+        leftTabbedPane.addTab("Performance", performancePanel);
 
         // Right Panel - Race and Controls
         JPanel rightPanel = new JPanel(new BorderLayout());
@@ -152,6 +137,7 @@ public class RaceGUI {
         rightPanel.add(controlPanel, BorderLayout.NORTH);
         rightPanel.add(scrollPane, BorderLayout.SOUTH);
 
+        splitPane.setLeftComponent(leftTabbedPane);
         splitPane.setRightComponent(rightPanel);
         frame.add(splitPane);
 
@@ -162,20 +148,6 @@ public class RaceGUI {
         frame.pack();
         frame.setMinimumSize(new Dimension(1000, 600));
         frame.setVisible(true);
-
-        performanceMetrics = new PerformanceMetrics();
-
-        // Create tabbed pane for left side
-        JTabbedPane leftTabbedPane = new JTabbedPane();
-        addHorsePanel = new AddHorsePanel(this);
-        bettingPanel = new BettingPanel(this, horses);
-        performancePanel = new PerformancePanel(performanceMetrics, horses);
-
-        leftTabbedPane.addTab("Horses", addHorsePanel);
-        leftTabbedPane.addTab("Betting", bettingPanel);
-        leftTabbedPane.addTab("Performance", performancePanel);
-
-        splitPane.setLeftComponent(leftTabbedPane);
     }
 
 
@@ -332,6 +304,16 @@ public class RaceGUI {
         return colorCombo;
     }
 
+    private void startRaceGUI() {
+        if (frame == null) {
+            // First time called - create the GUI
+            createAndShowGUI();
+        }
+
+        // Now start the race
+        startRace();
+    }
+
     private void startRace() {
         raceInProgress = true;
         startButton.setEnabled(false);
@@ -347,6 +329,7 @@ public class RaceGUI {
         animationTimer.start();
         raceTimer.start();
     }
+
 
     private void endRace(String message) {
         raceInProgress = false;
@@ -387,8 +370,13 @@ public class RaceGUI {
         return null;
     }
 
+
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new RaceGUI());
+        SwingUtilities.invokeLater(() -> {
+            RaceGUI raceGUI = new RaceGUI();
+            raceGUI.startRaceGUI(); // Initiate the GUI and start the race
+        });
     }
 
 

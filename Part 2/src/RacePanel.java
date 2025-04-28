@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RacePanel extends JPanel {
-    private Race2 race;
-    private Horse2[] horses;
+    private final Horse2[] horses;
     public final int RACE_LENGTH;
     private final int LANE_HEIGHT = 60;
     private final int MARGIN = 20;
@@ -67,7 +66,6 @@ public class RacePanel extends JPanel {
     }
 
     public RacePanel(Race2 race, Horse2[] horses) {
-        this.race = race;
         this.horses = horses;
         this.RACE_LENGTH = race != null ? race.getRaceLength() : 50;
         int panelHeight = (MAX_HORSES * (LANE_HEIGHT + MARGIN)) + 100;
@@ -84,13 +82,9 @@ public class RacePanel extends JPanel {
         return currentWeather;
     }
 
-    public void setRace(Race2 race) {
-        this.race = race;
-    }
 
-    public void setHorses(Horse2[] horses) {
-        this.horses = horses;
-    }
+
+
 
     private void updateBackgroundColor() {
         switch (currentWeather) {

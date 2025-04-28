@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 public class PerformanceMetrics {
-    private Map<Horse2, List<Double>> confidenceHistory;
-    private Map<Horse2, Double> averageSpeeds;
-    private Map<Horse2, Integer> winCounts;
-    private Map<Horse2, Integer> raceCounts;
-    private Map<String, Map<Horse2, Double>> trackRecords;
+    private final Map<Horse2, List<Double>> confidenceHistory;
+    private final Map<Horse2, Double> averageSpeeds;
+    private final Map<Horse2, Integer> winCounts;
+    private final Map<Horse2, Integer> raceCounts;
+    private final Map<String, Map<Horse2, Double>> trackRecords;
 
     public PerformanceMetrics() {
         confidenceHistory = new HashMap<>();
