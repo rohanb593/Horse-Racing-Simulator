@@ -11,7 +11,7 @@
 - Mac/Linux: Open Terminal
 
 ### Step 2: Navigate to Part 1
-cd path/to/HorseRacingSimulator/Part1/src
+cd path/to/HorseRacingSimulator/"Part 1"/src
 
 ### Step 3: Compile the Program
 javac *.java
@@ -39,7 +39,7 @@ Results display in the console
 - Mac/Linux: Open Terminal
 
 ### Step 2: Navigate to Part 2
-cd path/to/HorseRacingSimulator/Part2/src
+cd path/to/HorseRacingSimulator/"Part 2"/src
 
 ### Step 3: Compile the Program
 javac *.java
