@@ -32,7 +32,7 @@ public class BettingPanel extends JPanel {
         horsePanel.add(new JLabel("Select Horse:"));
         horseCombo = new JComboBox<>();
         updateHorseCombo(horses);
-        horseCombo.addActionListener(_ -> updateHorseStats());  // Add listener
+        horseCombo.addActionListener(e -> updateHorseStats());  // Add listener
         horsePanel.add(horseCombo);
         formPanel.add(horsePanel);
 

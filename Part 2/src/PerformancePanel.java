@@ -50,8 +50,8 @@ public class PerformancePanel extends JPanel {
         formPanel.add(trackPanel);
 
         // Add action listeners
-        horseSelector.addActionListener(_ -> updateDisplay());
-        trackSelector.addActionListener(_ -> updateDisplay());
+        horseSelector.addActionListener(e -> updateDisplay());
+        trackSelector.addActionListener(e -> updateDisplay());
 
         // Display area
         displayArea = new JTextArea(10, 30);

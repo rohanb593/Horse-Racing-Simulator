@@ -22,14 +22,14 @@ public class PerformanceMetrics {
         for (Horse2 horse : horses) {
             if (horse == null) continue;
 
-            confidenceHistory.computeIfAbsent(horse, _ -> new ArrayList<>()).add(horse.getConfidence());
+            confidenceHistory.computeIfAbsent(horse, e -> new ArrayList<>()).add(horse.getConfidence());
 
             double speed = (double) horse.getDistanceTravelled() / durationTicks;
             averageSpeeds.merge(horse, speed, (old, newVal) -> (old + newVal) / 2);
 
             raceCounts.merge(horse, 1, Integer::sum);
 
-            trackRecords.computeIfAbsent(trackCondition, _ -> new HashMap<>())
+            trackRecords.computeIfAbsent(trackCondition, e -> new HashMap<>())
                     .merge(horse, (double) horse.getDistanceTravelled(), Math::max);
         }
 

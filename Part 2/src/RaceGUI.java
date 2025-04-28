@@ -110,7 +110,7 @@ public class RaceGUI {
         JPanel weatherPanel = new JPanel();
         weatherPanel.add(new JLabel("Weather:"));
         weatherCombo = new JComboBox<>(WEATHER_OPTIONS);
-        weatherCombo.addActionListener(_ -> {
+        weatherCombo.addActionListener(e -> {
             String currentWeather = (String) weatherCombo.getSelectedItem();
             racePanel.setCurrentWeather(currentWeather);
             applyWeatherEffects();
@@ -121,12 +121,12 @@ public class RaceGUI {
 
         // Start Button
         startButton = new JButton("Start Race");
-        startButton.addActionListener(_ -> startRace());
+        startButton.addActionListener(e -> startRace());
         controlPanel.add(startButton);
 
         // Results Button
         JButton resultsButton = new JButton("Show Results");
-        resultsButton.addActionListener(_ -> showRaceResults());
+        resultsButton.addActionListener(e -> showRaceResults());
         controlPanel.add(resultsButton);
 
         // Info Area
@@ -142,7 +142,7 @@ public class RaceGUI {
         frame.add(splitPane);
 
         // Initialize timers
-        animationTimer = new Timer(50, _ -> racePanel.repaint());
+        animationTimer = new Timer(50, e -> racePanel.repaint());
         setupRaceTimer();
 
         frame.pack();
@@ -174,7 +174,7 @@ public class RaceGUI {
     }
 
     private void setupRaceTimer() {
-        raceTimer = new Timer(100, _ -> {
+        raceTimer = new Timer(100, e -> {
             raceDurationTicks++;  // Track each tick
 
             if (!raceInProgress) return;
