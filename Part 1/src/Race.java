@@ -6,6 +6,8 @@ public class Race {
     private final int raceLength;
     private final ArrayList<Horse> horses;
 
+    // there should have been a merge
+
     public Race(int distance) {
         raceLength = distance;
         horses = new ArrayList<>();

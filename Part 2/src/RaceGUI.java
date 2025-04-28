@@ -371,7 +371,7 @@ public class RaceGUI {
     }
 
 
-// there should have been a merge
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             RaceGUI raceGUI = new RaceGUI();
