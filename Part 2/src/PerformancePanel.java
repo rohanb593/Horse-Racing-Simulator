@@ -5,11 +5,11 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class PerformancePanel extends JPanel {
-    private final PerformanceMetrics metrics;
+    public final PerformanceMetrics metrics;
     private JComboBox<Horse2> horseSelector;
     private JComboBox<String> trackSelector;
     private JTextArea displayArea;
-    private DecimalFormat df = new DecimalFormat("0.00");
+    private final DecimalFormat df = new DecimalFormat("0.00");
 
     public PerformancePanel(PerformanceMetrics metrics, Horse2[] horses) {
         this.metrics = metrics;
@@ -19,30 +19,59 @@ public class PerformancePanel extends JPanel {
     }
 
     private void initializeComponents(Horse2[] horses) {
-        // Selection panel
-        JPanel selectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        // Main panel with vertical layout
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new GridLayout(0, 1, 5, 5)); // Single column layout
 
+        // Horse selection panel
+        JPanel horsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        horsePanel.add(new JLabel("Select Horse:"));
         horseSelector = new JComboBox<>();
-        for (Horse2 horse : horses) {
-            if (horse != null) horseSelector.addItem(horse);
-        }
-        horseSelector.addActionListener(e -> updateDisplay());
+        updateHorseSelector(horses);
+        horseSelector.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Horse2) {
+                    Horse2 horse = (Horse2) value;
+                    setText(horse.getName() + " (" + horse.getSymbol() + ")");
+                }
+                return this;
+            }
+        });
+        horsePanel.add(horseSelector);
+        formPanel.add(horsePanel);
 
+        // Track condition selection panel
+        JPanel trackPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        trackPanel.add(new JLabel("Track Condition:"));
         trackSelector = new JComboBox<>(new String[]{"All", "Sunny", "Rainy", "Muddy", "Icy"});
-        trackSelector.addActionListener(e -> updateDisplay());
+        trackPanel.add(trackSelector);
+        formPanel.add(trackPanel);
 
-        selectionPanel.add(new JLabel("Select Horse:"));
-        selectionPanel.add(horseSelector);
-        selectionPanel.add(new JLabel("Track Condition:"));
-        selectionPanel.add(trackSelector);
+        // Add action listeners
+        horseSelector.addActionListener(_ -> updateDisplay());
+        trackSelector.addActionListener(_ -> updateDisplay());
 
         // Display area
         displayArea = new JTextArea(10, 30);
         displayArea.setEditable(false);
+        displayArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scrollPane = new JScrollPane(displayArea);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Performance Details"));
 
-        add(selectionPanel, BorderLayout.NORTH);
+        add(formPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private void updateHorseSelector(Horse2[] horses) {
+        horseSelector.removeAllItems();
+        for (Horse2 horse : horses) {
+            if (horse != null) {
+                horseSelector.addItem(horse);
+            }
+        }
     }
 
     private void updateDisplay() {
@@ -51,33 +80,36 @@ public class PerformancePanel extends JPanel {
 
         if (selectedHorse == null) return;
 
-        // Build the display string using StringBuilder
         StringBuilder sb = new StringBuilder();
         sb.append("Performance Metrics for ").append(selectedHorse.getName()).append("\n\n");
-        sb.append("Average Speed: ").append(df.format(metrics.getAverageSpeed(selectedHorse))).append("\n");
-        sb.append("Win Ratio: ").append(df.format(metrics.getWinRatio(selectedHorse) * 100)).append("%\n");
-
+        sb.append(String.format("%-20s: %s\n", "Average Speed", df.format(metrics.getAverageSpeed(selectedHorse))));
+        sb.append(String.format("%-20s: %s%%\n", "Win Ratio", df.format(metrics.getWinRatio(selectedHorse) * 100)));
 
         if (!"All".equals(trackCondition)) {
-            sb.append("Best Distance on ").append(trackCondition).append(" track: ")
-                    .append(df.format(metrics.getTrackRecord(selectedHorse, trackCondition))).append("\n");
+            sb.append(String.format("%-20s: %s\n", "Best " + trackCondition + " Distance",
+                    df.format(metrics.getTrackRecord(selectedHorse, trackCondition))));
         }
 
         sb.append("\nConfidence History:\n");
         List<Double> confidenceHistory = metrics.getConfidenceHistory(selectedHorse);
-        for (int i = 0; i < confidenceHistory.size(); i++) {
-            sb.append("Race ").append(i + 1).append(": ")
-                    .append(df.format(confidenceHistory.get(i))).append("\n");
+        if (confidenceHistory.isEmpty()) {
+            sb.append("No race history available\n");
+        } else {
+            for (int i = 0; i < confidenceHistory.size(); i++) {
+                sb.append(String.format("Race %-3d: %s\n", i + 1, df.format(confidenceHistory.get(i))));
+            }
         }
 
-        // Set the complete string at once
         displayArea.setText(sb.toString());
     }
 
     public void updateHorses(Horse2[] horses) {
         horseSelector.removeAllItems();
         for (Horse2 horse : horses) {
-            if (horse != null) horseSelector.addItem(horse);
+            if (horse != null) {
+                horseSelector.addItem(horse);
+            }
         }
+        updateDisplay();
     }
 }

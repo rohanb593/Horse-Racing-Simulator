@@ -1,16 +1,17 @@
 import java.awt.Color;
 
 public class Horse2 {
-    private char horseSymbol;
-    private String horseName;
+    private final char horseSymbol;
+    private final String horseName;
     private double horseConfidence;
     private int distanceTravelled;
     private boolean horseHasFallen;
-    private String shape;
-    private Color color;
+    private final String shape;
+    private final Color color;
     public double speedModifier = 1.0;
-    private int racesWon;
-    private int racesParticipated;
+    private int racesWon = 0;
+    private int racesParticipated = 0;
+
 
     public Horse2(char horseSymbol, String horseName, double horseConfidence, String shape, Color color) {
         this.horseSymbol = horseSymbol;
@@ -22,13 +23,15 @@ public class Horse2 {
         this.color = color;
 
 
+
     }
 
     public double getWinRatio() {
         return racesParticipated == 0 ? 0 : (double) racesWon / racesParticipated;
     }
 
-    public void recordRaceParticipation(boolean won) {
+
+    public void recordRaceResult(boolean won) {
         racesParticipated++;
         if (won) {
             racesWon++;
@@ -104,7 +107,4 @@ public class Horse2 {
         }
     }
 
-    public void setSymbol(char newSymbol) {
-        this.horseSymbol = newSymbol;
-    }
 }

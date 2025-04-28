@@ -1,5 +1,4 @@
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import javax.swing.BorderFactory;
@@ -11,7 +10,6 @@ class AddHorsePanel extends JPanel {
     private JComboBox<String> shapeCombo;
     private JComboBox<Color> colorCombo;
     private JButton addButton;
-    private JButton toBettingButton;
 
     public AddHorsePanel(RaceGUI raceGUI) {
         this.raceGUI = raceGUI;
@@ -21,37 +19,49 @@ class AddHorsePanel extends JPanel {
     }
 
     private void createComponents() {
-        // Top navigation panel
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        toBettingButton = new JButton("Go to Betting");
-        toBettingButton.setPreferredSize(new Dimension(120, 25));
-        toBettingButton.addActionListener(e -> raceGUI.showBettingPanel());
-        topPanel.add(toBettingButton);
-        add(topPanel, BorderLayout.NORTH);
+        // Main form panel with tighter spacing
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new GridLayout(5, 1, 5, 5)); // Reduced vertical gap from 5 to 3
 
-        // Main form panel
-        JPanel formPanel = new JPanel(new GridLayout(5, 2, 5, 5));
+        // Name field panel
+        JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        namePanel.add(new JLabel("Name:"));
+        nameField = new JTextField(15); // Reduced width from default
+        namePanel.add(nameField);
+        formPanel.add(namePanel);
 
-        nameField = new JTextField();
-        confidenceField = new JTextField();
+        // Confidence field panel
+        JPanel confidencePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        confidencePanel.add(new JLabel("Confidence (0.1-1.0):"));
+        confidenceField = new JTextField(5); // Very narrow field for numbers
+        confidencePanel.add(confidenceField);
+        formPanel.add(confidencePanel);
+
+        // Shape combo panel
+        JPanel shapePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        shapePanel.add(new JLabel("Shape:"));
         shapeCombo = new JComboBox<>(RaceGUI.SHAPE_OPTIONS);
+        shapeCombo.setPreferredSize(new Dimension(120, 25)); // Compact combo box
+        shapePanel.add(shapeCombo);
+        formPanel.add(shapePanel);
+
+        // Color combo panel
+        JPanel colorPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        colorPanel.add(new JLabel("Color:"));
         colorCombo = raceGUI.getColorJComboBox();
+        colorCombo.setPreferredSize(new Dimension(120, 25)); // Compact combo box
+        colorPanel.add(colorCombo);
+        formPanel.add(colorPanel);
 
+        // Add button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
         addButton = new JButton("Add Horse");
+        addButton.setPreferredSize(new Dimension(120, 25)); // Standard button size
         addButton.addActionListener(this::addHorseAction);
+        buttonPanel.add(addButton);
+        formPanel.add(buttonPanel);
 
-        formPanel.add(new JLabel("Name:"));
-        formPanel.add(nameField);
-        formPanel.add(new JLabel("Confidence (0.1-1.0):"));
-        formPanel.add(confidenceField);
-        formPanel.add(new JLabel("Shape:"));
-        formPanel.add(shapeCombo);
-        formPanel.add(new JLabel("Color:"));
-        formPanel.add(colorCombo);
-        formPanel.add(new JLabel());
-        formPanel.add(addButton);
-
-        add(formPanel, BorderLayout.CENTER);
+        add(formPanel, BorderLayout.NORTH);
     }
 
     private void addHorseAction(ActionEvent e) {

@@ -1,6 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+
 
 public class RaceGUI {
     private Race2 race;
@@ -18,12 +18,12 @@ public class RaceGUI {
     private AddHorsePanel addHorsePanel;
 
     private BettingPanel bettingPanel;
-    private JSplitPane splitPane;
-    private PerformanceMetrics performanceMetrics;
+    public PerformanceMetrics performanceMetrics;
     private PerformancePanel performancePanel;
-    private JTabbedPane leftTabbedPane;
     private int raceDurationTicks = 0;
-    private JTabbedPane mainTabbedPane;
+
+
+
 
 
     public static final String[] SHAPE_OPTIONS = {"Rectangle", "Circle", "Triangle", "Diamond", "Star"};
@@ -42,6 +42,7 @@ public class RaceGUI {
     }
 
     public RaceGUI() {
+        performanceMetrics = new PerformanceMetrics();
         racePanel = new RacePanel(null, null);
         initializeRaceWithDefaults();
         createAndShowGUI();
@@ -55,7 +56,7 @@ public class RaceGUI {
         horses[1] = new Horse2('B', "Lightning", 0.8, "Circle", Color.BLUE);
         horses[2] = new Horse2('C', "Storm", 0.7, "Triangle", Color.GREEN);
         horses[3] = new Horse2('D', "Doom", 0.6, "Diamond", Color.YELLOW);
-        horses[4] = new Horse2('E', "Rain", 0.5, "Star", Color.MAGENTA);
+        horses[4] = new Horse2('E', "Rain", 0.75, "Star", Color.MAGENTA);
 
         for (int i = 0; i < horses.length; i++) {
             if (horses[i] != null) {
@@ -67,34 +68,34 @@ public class RaceGUI {
         racePanel.setHorses(horses);
     }
 
-    public void showBettingPanel() {
+    public void updateAllHorseDropdowns() {
         bettingPanel.updateHorses(horses);
-        splitPane.setLeftComponent(bettingPanel);
-        splitPane.revalidate();
-        splitPane.repaint();
+        performancePanel.updateHorses(horses);
     }
 
-    public void showAddHorsePanel() {
-        splitPane.setLeftComponent(addHorsePanel);
-        splitPane.revalidate();
-        splitPane.repaint();
-    }
+
+
+
+
+
 
     private void createAndShowGUI() {
         frame = new JFrame("Horse Race");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        performanceMetrics = new PerformanceMetrics();
         // Initialize horses array first
         horses = new Horse2[MAX_HORSES];
         initializeRaceWithDefaults();
 
         // Now create panels
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(300);
         splitPane.setResizeWeight(0.3);
 
         addHorsePanel = new AddHorsePanel(this);
         bettingPanel = new BettingPanel(this, horses);  // Now horses is initialized
+        performancePanel = new PerformancePanel(performanceMetrics, horses);
 
         splitPane.setLeftComponent(addHorsePanel);
 
@@ -124,7 +125,7 @@ public class RaceGUI {
         JPanel weatherPanel = new JPanel();
         weatherPanel.add(new JLabel("Weather:"));
         weatherCombo = new JComboBox<>(WEATHER_OPTIONS);
-        weatherCombo.addActionListener(e -> {
+        weatherCombo.addActionListener(_ -> {
             String currentWeather = (String) weatherCombo.getSelectedItem();
             racePanel.setCurrentWeather(currentWeather);
             applyWeatherEffects();
@@ -135,12 +136,12 @@ public class RaceGUI {
 
         // Start Button
         startButton = new JButton("Start Race");
-        startButton.addActionListener(e -> startRace());
+        startButton.addActionListener(_ -> startRace());
         controlPanel.add(startButton);
 
         // Results Button
         JButton resultsButton = new JButton("Show Results");
-        resultsButton.addActionListener(e -> showRaceResults());
+        resultsButton.addActionListener(_ -> showRaceResults());
         controlPanel.add(resultsButton);
 
         // Info Area
@@ -155,7 +156,7 @@ public class RaceGUI {
         frame.add(splitPane);
 
         // Initialize timers
-        animationTimer = new Timer(50, e -> racePanel.repaint());
+        animationTimer = new Timer(50, _ -> racePanel.repaint());
         setupRaceTimer();
 
         frame.pack();
@@ -165,7 +166,7 @@ public class RaceGUI {
         performanceMetrics = new PerformanceMetrics();
 
         // Create tabbed pane for left side
-        leftTabbedPane = new JTabbedPane();
+        JTabbedPane leftTabbedPane = new JTabbedPane();
         addHorsePanel = new AddHorsePanel(this);
         bettingPanel = new BettingPanel(this, horses);
         performancePanel = new PerformancePanel(performanceMetrics, horses);
@@ -176,6 +177,7 @@ public class RaceGUI {
 
         splitPane.setLeftComponent(leftTabbedPane);
     }
+
 
     private void showRaceResults() {
         if (raceInProgress) {
@@ -200,7 +202,7 @@ public class RaceGUI {
     }
 
     private void setupRaceTimer() {
-        raceTimer = new Timer(100, e -> {
+        raceTimer = new Timer(100, _ -> {
             raceDurationTicks++;  // Track each tick
 
             if (!raceInProgress) return;
@@ -242,11 +244,14 @@ public class RaceGUI {
                 }
             }
 
-            double fallChance = 0.05 * horse.getConfidence() * horse.getConfidence();
+            // Reduced base fall chance from 0.05 to 0.02 (2% base chance)
+            double fallChance = 0.002 * horse.getConfidence(); // Removed the squared confidence
+
+            // Reduced weather multipliers
             if (racePanel.getCurrentWeather().equals("Muddy")) {
-                fallChance *= 1.5;
+                fallChance *= 1.3;  // Reduced from 1.5
             } else if (racePanel.getCurrentWeather().equals("Icy")) {
-                fallChance *= 2.0;
+                fallChance *= 1.6;  // Reduced from 2.0
             }
 
             if (Math.random() < fallChance) {
@@ -294,6 +299,9 @@ public class RaceGUI {
             newHorse.applyWeatherEffect(racePanel.getCurrentWeather());
             horses[nextAvailableSlot] = newHorse;
             race.addHorse(newHorse, nextAvailableSlot + 1);
+
+            // Update all dropdown menus
+            updateAllHorseDropdowns();
 
             racePanel.repaint();
             infoArea.append("Added new horse: " + name + " (" + shape + ")\n");
@@ -346,6 +354,17 @@ public class RaceGUI {
         animationTimer.stop();
 
         Horse2 winner = findWinningHorse();
+        // Record race results for all horses
+        for (Horse2 horse : horses) {
+            if (horse != null) {
+                horse.recordRaceResult(horse == winner);
+            }
+        }
+
+        if (winner != null) {
+            bettingPanel.processWinnings(winner);
+        }
+
         performanceMetrics.recordRace(horses, racePanel.getCurrentWeather(),
                 RACE_LENGTH, raceDurationTicks);
 

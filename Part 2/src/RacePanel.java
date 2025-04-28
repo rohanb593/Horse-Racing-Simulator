@@ -6,10 +6,9 @@ import java.util.Map;
 public class RacePanel extends JPanel {
     private Race2 race;
     private Horse2[] horses;
-    public final int RACE_LENGTH = 50;
+    public final int RACE_LENGTH;
     private final int LANE_HEIGHT = 60;
     private final int MARGIN = 20;
-    private final int FINISH_LINE_WIDTH = 10;
     private final int MAX_HORSES = 10;
     private String currentWeather = "Sunny";
 
@@ -70,6 +69,7 @@ public class RacePanel extends JPanel {
     public RacePanel(Race2 race, Horse2[] horses) {
         this.race = race;
         this.horses = horses;
+        this.RACE_LENGTH = race != null ? race.getRaceLength() : 50;
         int panelHeight = (MAX_HORSES * (LANE_HEIGHT + MARGIN)) + 100;
         setPreferredSize(new Dimension(900, panelHeight));
         updateBackgroundColor();
@@ -125,6 +125,7 @@ public class RacePanel extends JPanel {
 
         g.setColor(Color.RED);
         int finishX = 50 + RACE_LENGTH * scale;
+        int FINISH_LINE_WIDTH = 10;
         g.fillRect(finishX, 0, FINISH_LINE_WIDTH, MAX_HORSES * (LANE_HEIGHT + MARGIN) + 50);
 
         for (int i = 0; i < horses.length; i++) {

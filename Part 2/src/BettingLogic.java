@@ -28,7 +28,5 @@ public class BettingLogic {
         bets.clear();
     }
 
-    public Map<Horse2, Double> getBets() {
-        return new HashMap<>(bets);
-    }
+
 }

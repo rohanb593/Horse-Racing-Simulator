@@ -119,6 +119,9 @@ public class Race2 {
         double newConfidence = Math.min(1.0, currentConfidence + 0.1);
         horse.setConfidence(newConfidence);
     }
+    public int getRaceLength() {
+        return raceLength;
+    }
 
     private void setConfidenceLosers(Horse2 horse) {
         double currentConfidence = horse.getConfidence();
